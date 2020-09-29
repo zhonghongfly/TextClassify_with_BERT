@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-@author: yaleimeng@sina.com
-@license: (C) Copyright 2019
-@desc: 这个代码是进行预测的。既可以根据ckpt检查点，也可以根据单个pb模型。
-@DateTime: Created on 2019/7/19, at 下午 04:13 by PyCharm
-"""
+'''
+@author: zhonghongfly@foxmail.com
+@license: (C) Copyright 2020
+@desc: 模型预测，基于ckpt、pb模型
+@DateTime: Created on 2020/9/27, at 下午 03:45 by PyCharm
+'''
 from train_eval import *
 from tensorflow.python.estimator.model_fn import EstimatorSpec
 

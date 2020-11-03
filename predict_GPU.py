@@ -59,7 +59,9 @@ class Bert_Class:
             num_warmup_steps = int(num_train_steps * arg_dic['warmup_proportion'])
 
             model_fn = model_fn_builder(bert_config=self.config, num_labels=len(label_list),
-                                        init_checkpoint=arg_dic['init_checkpoint'], learning_rate=arg_dic['learning_rate'],
+                                        # init_checkpoint=arg_dic['init_checkpoint'],
+                                        init_checkpoint="./output/model.ckpt-0",
+                                        learning_rate=arg_dic['learning_rate'],
                                         num_train=num_train_steps, num_warmup=num_warmup_steps)
 
             self.ckpt_tool = tf.estimator.Estimator(model_fn=model_fn, config=self.run_config, )
@@ -101,6 +103,26 @@ if __name__ == "__main__":
         print(toy.predict_on_ckpt(t), t)
     bbb = time.perf_counter()
     print('ckpt预测用时：', bbb - aaa)
+
+    file_path = os.path.join(arg_dic['data_dir'], 'test.txt')
+    with open(file_path, 'r', encoding="utf-8") as f:
+        reader = f.readlines()
+
+    sum = 0
+    num = 0
+    for index, line in enumerate(reader):
+        split_line = line.strip().split("\t")
+        if len(split_line) < 2:
+            continue
+        sum += 1
+        label = split_line[0]
+        text = split_line[1]
+        predict = toy.predict_on_ckpt(text)
+        print(predict, label, text)
+        if label == predict:
+            num += 1
+
+    print("测试准确率：", num / sum)
 
     aaa = time.perf_counter()
     for t in testcase:

@@ -534,6 +534,7 @@ def save_PBmodel(num_labels):
     try:
         # 如果PB文件已经存在，则返回PB文件的路径，否则将模型转化为PB文件，并且返回存储PB文件的路径
         pb_file = os.path.join(arg_dic['pb_model_dir'], 'classification_model.pb')
+        print("pb_file ==> " + pb_file)
         graph = tf.Graph()
         with graph.as_default():
             input_ids = tf.placeholder(tf.int32, (None, arg_dic['max_seq_length']), 'input_ids')
@@ -549,9 +550,11 @@ def save_PBmodel(num_labels):
             with tf.Session() as sess:
                 sess.run(tf.global_variables_initializer())
                 latest_checkpoint = tf.train.latest_checkpoint(arg_dic['output_dir'])
+                print('loading... %s ' % latest_checkpoint )
                 saver.restore(sess, latest_checkpoint)
                 from tensorflow.python.framework import graph_util
                 tmp_g = graph_util.convert_variables_to_constants(sess, graph.as_graph_def(), ['pred_prob'])
+                print('predict cut finished !!!')
 
         # 存储二进制模型到文件中
         with tf.gfile.GFile(pb_file, 'wb') as f:
@@ -683,7 +686,7 @@ def main():
             input_file=predict_file, seq_length=arg_dic['max_seq_length'],
             is_training=False, drop_remainder=False)
 
-        result = estimator.predict(input_fn=predict_input_fn)  # 执行预测操作，得到结果
+        # result = estimator.predict(input_fn=predict_input_fn)  # 执行预测操作，得到结果
 
         output_predict_file = os.path.join(arg_dic['output_dir'], "test_results.tsv")
         with tf.gfile.GFile(output_predict_file, "w") as writer:
@@ -691,17 +694,17 @@ def main():
             sum = 0
             num = 0
             tf.logging.info("***** Predict results *****")
-            for sam, prediction in zip(predict_examples, result):
-                sum += 1
-                probabilities = prediction["probabilities"]
-
-                gailv = probabilities.tolist()  # 先转换成Python列表
-                pos = gailv.index(max(gailv))  # 定位到最大概率值索引，
-                # 找到预测出的类别名,写入到输出文件
-                writer.write('{}\t{}\t{}\n'.format(sam.label, label_list[pos], sam.text))
-                if sam.label == label_list[pos]:
-                    num += 1
-            print("测试准确率：", num / sum)
+            # for sam, prediction in zip(predict_examples, result):
+            #     sum += 1
+            #     probabilities = prediction["probabilities"]
+            #
+            #     gailv = probabilities.tolist()  # 先转换成Python列表
+            #     pos = gailv.index(max(gailv))  # 定位到最大概率值索引，
+            #     # 找到预测出的类别名,写入到输出文件
+            #     writer.write('{}\t{}\t{}\n'.format(sam.label, label_list[pos], sam.text))
+            #     if sam.label == label_list[pos]:
+            #         num += 1
+            # print("测试准确率：", num / sum)
 
     save_PBmodel(len(label_list))  # 生成单个pb模型。
 

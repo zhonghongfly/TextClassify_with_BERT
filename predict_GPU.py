@@ -60,7 +60,7 @@ class Bert_Class:
 
             model_fn = model_fn_builder(bert_config=self.config, num_labels=len(label_list),
                                         # init_checkpoint=arg_dic['init_checkpoint'],
-                                        init_checkpoint="./output/model.ckpt-0",
+                                        init_checkpoint="F:\\ml\\TextClassify_with_BERT\\output\\model.ckpt-149863",
                                         learning_rate=arg_dic['learning_rate'],
                                         num_train=num_train_steps, num_warmup=num_warmup_steps)
 
@@ -99,10 +99,10 @@ if __name__ == "__main__":
                 '王一博 的 私人 手机 震动 起来 戚年 微怔，瞧了 一眼 来电 显示 她 乖巧 的 窝在 王一博 怀里 不语']
     toy = Bert_Class()
     aaa = time.perf_counter()
-    for t in testcase:
-        print(toy.predict_on_ckpt(t), t)
-    bbb = time.perf_counter()
-    print('ckpt预测用时：', bbb - aaa)
+    # for t in testcase:
+    #     print(toy.predict_on_ckpt(t), t)
+    # bbb = time.perf_counter()
+    # print('ckpt预测用时：', bbb - aaa)
 
     file_path = os.path.join(arg_dic['data_dir'], 'test.txt')
     with open(file_path, 'r', encoding="utf-8") as f:
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         sum += 1
         label = split_line[0]
         text = split_line[1]
-        predict = toy.predict_on_ckpt(text)
+        predict = toy.predict_on_pb(text)
         print(predict, label, text)
         if label == predict:
             num += 1

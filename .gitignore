@@ -2,11 +2,11 @@
 
 /logs/
 
-/data/
+/base_on_bert/data/
 
-/output/
+/base_on_bert/output/
 
-/pb/
+/base_on_bert/pb/
 
 !.mvn/wrapper/maven-wrapper.jar
 

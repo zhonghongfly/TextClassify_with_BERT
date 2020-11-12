@@ -5,7 +5,7 @@
 @desc: 模型预测，基于ckpt、pb模型
 @DateTime: Created on 2020/9/27, at 下午 03:45 by PyCharm
 '''
-from train_eval import *
+from base_on_bert.train_eval import *
 from tensorflow.python.estimator.model_fn import EstimatorSpec
 
 
@@ -87,6 +87,7 @@ class Bert_Class:
         result = self.pbTool.predict(input_fn=predict_input_fn)  # 执行预测操作，得到一个生成器。
         ele = list(result)[0]
         print('类别：{}，置信度：{:.3f}'.format(label_list[ele['encodes']], ele['score']))
+        print("label_list ==> ", label_list)
         return label_list[ele['encodes']]
 
 

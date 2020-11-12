@@ -21,10 +21,8 @@ import pickle
 import random
 import math
 
-import modeling
-import optimization
-import tokenization
-from arguments import *
+from base_on_bert import modeling, tokenization, optimization
+from base_on_bert.arguments import *
 import tensorflow as tf
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -360,6 +358,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, labels, num_la
     # If you want to use the token-level output, use model.get_sequence_output() instead.
     # 这个获取每个token的output 输入数据[batch_size, seq_length, embedding_size] 如果做seq2seq 或者ner 用这个
     embedding_layer = model.get_sequence_output()
+    print("embedding_layer ==> ", embedding_layer)
     # 这个获取句子的output
     output_layer = model.get_pooled_output()
     print("output_layer ===> ", output_layer)
@@ -459,6 +458,11 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         all_input_mask.append(feature.input_mask)
         all_label_ids.append(feature.label_id)
 
+    print("all_input_ids ==> ", all_input_ids)
+    print("all_input_mask ==> ", all_input_mask)
+    print("all_label_ids ==> ", all_label_ids)
+    print("num_examples len ==> ", len(features))
+
     def input_fn(params):
         """The actual input function."""
         batch_size = 200  # params["batch_size"]
@@ -550,7 +554,7 @@ def save_PBmodel(num_labels):
             with tf.Session() as sess:
                 sess.run(tf.global_variables_initializer())
                 latest_checkpoint = tf.train.latest_checkpoint(arg_dic['output_dir'])
-                print('loading... %s ' % latest_checkpoint )
+                print('loading... %s ' % latest_checkpoint)
                 saver.restore(sess, latest_checkpoint)
                 from tensorflow.python.framework import graph_util
                 tmp_g = graph_util.convert_variables_to_constants(sess, graph.as_graph_def(), ['pred_prob'])
@@ -690,7 +694,6 @@ def main():
 
         output_predict_file = os.path.join(arg_dic['output_dir'], "test_results.tsv")
         with tf.gfile.GFile(output_predict_file, "w") as writer:
-
             sum = 0
             num = 0
             tf.logging.info("***** Predict results *****")

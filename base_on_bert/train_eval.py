@@ -697,17 +697,17 @@ def main():
             sum = 0
             num = 0
             tf.logging.info("***** Predict results *****")
-            # for sam, prediction in zip(predict_examples, result):
-            #     sum += 1
-            #     probabilities = prediction["probabilities"]
-            #
-            #     gailv = probabilities.tolist()  # 先转换成Python列表
-            #     pos = gailv.index(max(gailv))  # 定位到最大概率值索引，
-            #     # 找到预测出的类别名,写入到输出文件
-            #     writer.write('{}\t{}\t{}\n'.format(sam.label, label_list[pos], sam.text))
-            #     if sam.label == label_list[pos]:
-            #         num += 1
-            # print("测试准确率：", num / sum)
+            for sam, prediction in zip(predict_examples, result):
+                sum += 1
+                probabilities = prediction["probabilities"]
+
+                gailv = probabilities.tolist()  # 先转换成Python列表
+                pos = gailv.index(max(gailv))  # 定位到最大概率值索引，
+                # 找到预测出的类别名,写入到输出文件
+                writer.write('{}\t{}\t{}\n'.format(sam.label, label_list[pos], sam.text))
+                if sam.label == label_list[pos]:
+                    num += 1
+            print("测试准确率：", num / sum)
 
     save_PBmodel(len(label_list))  # 生成单个pb模型。
 

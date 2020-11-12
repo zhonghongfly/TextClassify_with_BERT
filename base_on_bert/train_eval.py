@@ -690,7 +690,7 @@ def main():
             input_file=predict_file, seq_length=arg_dic['max_seq_length'],
             is_training=False, drop_remainder=False)
 
-        # result = estimator.predict(input_fn=predict_input_fn)  # 执行预测操作，得到结果
+        result = estimator.predict(input_fn=predict_input_fn)  # 执行预测操作，得到结果
 
         output_predict_file = os.path.join(arg_dic['output_dir'], "test_results.tsv")
         with tf.gfile.GFile(output_predict_file, "w") as writer:

@@ -32,7 +32,7 @@ print(length)
 km = KMeans(n_clusters=length)
 vectors_ = pca.fit_transform(vectors)  # 降维到二维
 
-np.savetxt("text_vectors.txt", vectors_)
+np.savetxt("./output/text_vectors.txt", vectors_)
 
 
 y_ = km.fit_predict(vectors_)  # 聚类

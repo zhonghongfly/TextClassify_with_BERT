@@ -8,6 +8,8 @@
 
 /base_on_bert/pb/
 
+/cluster/output
+
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###

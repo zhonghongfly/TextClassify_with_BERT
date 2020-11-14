@@ -14,7 +14,7 @@ class BiLSTMWithAttention(object):
         self.config = config
 
         # 定义模型的输入
-        self.inputX = tf.placeholder(tf.int32, [None, config.sequenceLength], name="inputX")
+        self.inputX = tf.placeholder(tf.float32, shape=(config.batchSize, config.sequenceLength, 768), name="inputX")
         self.inputY = tf.placeholder(tf.int32, [None], name="inputY")
 
         self.dropoutKeepProb = tf.placeholder(tf.float32, name="dropoutKeepProb")
@@ -47,6 +47,7 @@ class BiLSTMWithAttention(object):
                     # 采用动态rnn，可以动态的输入序列的长度，若没有输入，则取序列的全长
                     # outputs是一个元祖(output_fw, output_bw)，其中两个元素的维度都是[batch_size, max_time, hidden_size],fw和bw的hidden_size一样
                     # self.current_state 是最终的状态，二元组(state_fw, state_bw)，state_fw=[batch_size, s]，s是一个元祖(h, c)
+                    print("self.embeddedWords ==> ", self.embeddedWords)
                     outputs_, self.current_state = tf.nn.bidirectional_dynamic_rnn(lstmFwCell, lstmBwCell,
                                                                                    self.embeddedWords, dtype=tf.float32,
                                                                                    scope="bi-lstm" + str(idx))

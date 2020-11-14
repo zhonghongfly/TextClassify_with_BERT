@@ -12,7 +12,9 @@ labelList = data.getLabelList()
 
 train_example = data.get_train_input_example()
 
-eval_example = data.get_eval_input_example()
+# eval_example = data.get_eval_input_example()
+
+eval_example = train_example
 
 # 定义计算图
 with tf.Graph().as_default():
@@ -56,10 +58,9 @@ with tf.Graph().as_default():
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=5)
 
         # 保存模型的一种方式，保存为pb文件
-        savedModelPath = "../model/bilstm-atten/savedModel"
-        if os.path.exists(savedModelPath):
-            os.rmdir(savedModelPath)
-        builder = tf.saved_model.builder.SavedModelBuilder(savedModelPath)
+        if os.path.exists(config.savedModelPathForPb):
+            os.rmdir(config.savedModelPathForPb)
+        builder = tf.saved_model.builder.SavedModelBuilder(config.savedModelPathForPb)
 
         sess.run(tf.global_variables_initializer())
 
@@ -152,7 +153,7 @@ with tf.Graph().as_default():
 
                 if currentStep % config.training.checkpointEvery == 0:
                     # 保存模型的另一种方法，保存checkpoint文件
-                    path = saver.save(sess, "../model/Bi-LSTM-atten/model/my-model", global_step=currentStep)
+                    path = saver.save(sess, config.savedModelPathForCkpt, global_step=currentStep)
                     print("Saved model checkpoint to {}\n".format(path))
 
         inputs = {"inputX": tf.saved_model.utils.build_tensor_info(lstm.inputX),

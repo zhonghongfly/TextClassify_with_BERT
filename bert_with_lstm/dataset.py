@@ -9,7 +9,7 @@ from bert_with_lstm.config import *
 from bert_serving.client import BertClient
 
 # 192.168.2.111
-bc = BertClient(ip='192.168.2.111', check_version=False, check_length=False)
+bc = BertClient(ip='127.0.0.1', check_version=False, check_length=False)
 
 
 # 输出batch数据集
@@ -33,7 +33,7 @@ def nextBatch(example, label_list, batchSize):
 
     for item in example:
         embeddings.append(item.embedding)
-        label_id = label_map[example.label]
+        label_id = label_map[item.label]
         label_ids.append(label_id)
 
     for i in range(numBatches):
@@ -61,24 +61,22 @@ class Dataset(object):
         self.test_input_example = []
 
     def getTrainData(self):
-        file_path = os.path.join(config.dataSource, 'train_1.txt')
+        file_path = os.path.join(config.dataSource, 'train.txt')
         with open(file_path, 'r', encoding="utf-8") as f:
             reader = f.readlines()
         random.seed(0)
         random.shuffle(reader)
         for index, line in enumerate(reader):
+            # print(line)
             split_line = line.strip().split("\t")
             lab = split_line[0]
+            print(lab)
             content = split_line[1]
+            print(content)
             self.label_list.append(lab)
-            embeddings = []
-            embedding = bc.encode(get_split_text(content, 500, 50))
-            print(embedding)
-            # for item in embedding:
-            #     print("item ==> " + item)
-            #     embeddings += item
-            embeddings = embedding
-            self.train_input_example.append(InputExample(embeddings, label=lab))
+            embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
+            print(embedding.shape)
+            self.train_input_example.append(InputExample(embedding, label=lab))
 
     def getValData(self):
         file_path = os.path.join(config.dataSource, 'train_1.txt')
@@ -90,12 +88,8 @@ class Dataset(object):
             split_line = line.strip().split("\t")
             lab = split_line[0]
             content = split_line[1]
-            embeddings = []
-            embedding = bc.encode(get_split_text(content, 500, 50))
-            for item in embedding:
-                embeddings += item
-            embeddings = [embeddings]
-            self.eval_input_example.append(InputExample(embeddings, label=lab))
+            embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
+            self.eval_input_example.append(InputExample(embedding, label=lab))
 
     def getTestData(self):
         file_path = os.path.join(config.dataSource, 'train_1.txt')
@@ -104,13 +98,11 @@ class Dataset(object):
         for index, line in enumerate(reader):
             split_line = line.strip().split("\t")
             lab = split_line[0]
+            print("label ==> " + lab)
             content = split_line[1]
-            embeddings = []
-            embedding = bc.encode(get_split_text(content, 500, 50))
-            for item in embedding:
-                embeddings += item
-            embeddings = [embeddings]
-            self.test_input_example.append(InputExample(embeddings, label=lab))
+            print("content ==> " + content)
+            embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
+            self.test_input_example.append(InputExample(embedding, label=lab))
 
     def getLabelList(self):
         if len(self.label_list) <= 0:
@@ -122,7 +114,7 @@ class Dataset(object):
             self.getTrainData()
         return self.train_input_example
 
-    def get_val_input_example(self):
+    def get_eval_input_example(self):
         if len(self.eval_input_example) <= 0:
             self.getValData()
         return self.eval_input_example

@@ -79,7 +79,7 @@ class Dataset(object):
             self.train_input_example.append(InputExample(embedding, label=lab))
 
     def getValData(self):
-        file_path = os.path.join(config.dataSource, 'train_1.txt')
+        file_path = os.path.join(config.dataSource, 'val.txt')
         with open(file_path, 'r', encoding="utf-8") as f:
             reader = f.readlines()
         random.seed(0)
@@ -92,7 +92,7 @@ class Dataset(object):
             self.eval_input_example.append(InputExample(embedding, label=lab))
 
     def getTestData(self):
-        file_path = os.path.join(config.dataSource, 'train_1.txt')
+        file_path = os.path.join(config.dataSource, 'test.txt')
         with open(file_path, 'r', encoding="utf-8") as f:
             reader = f.readlines()
         for index, line in enumerate(reader):

@@ -12,9 +12,7 @@ labelList = data.getLabelList()
 
 train_example = data.get_train_input_example()
 
-# eval_example = data.get_eval_input_example()
-
-eval_example = train_example
+eval_example = data.get_eval_input_example()
 
 # 定义计算图
 with tf.Graph().as_default():

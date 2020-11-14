@@ -2,6 +2,7 @@
 定义各类性能指标
 """
 
+
 def mean(item: list) -> float:
     """
     计算列表中元素的平均值

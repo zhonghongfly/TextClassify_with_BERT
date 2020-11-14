@@ -2,10 +2,16 @@
 
 import tensorflow as tf
 
+"""
+定义Bi-LSTM模型
+"""
 
-class BiLSTM(object):
 
-    def __init__(self, config, wordEmbedding):
+class BiLSTMWithAttention(object):
+
+    def __init__(self, config):
+
+        self.config = config
 
         # 定义模型的输入
         self.inputX = tf.placeholder(tf.int32, [None, config.sequenceLength], name="inputX")
@@ -19,10 +25,11 @@ class BiLSTM(object):
         # 词嵌入层
         with tf.name_scope("embedding"):
 
-            # 利用预训练的词向量初始化词嵌入矩阵
-            self.W = tf.Variable(tf.cast(wordEmbedding, dtype=tf.float32, name="word2vec"), name="W")
-            # 利用词嵌入矩阵将输入的数据中的词转换成词向量，维度[batch_size, sequence_length, embedding_size]
-            self.embeddedWords = tf.nn.embedding_lookup(self.W, self.inputX)
+            # # 利用预训练的词向量初始化词嵌入矩阵
+            # self.W = tf.Variable(tf.cast(wordEmbedding, dtype=tf.float32, name="word2vec"), name="W")
+            # # 利用词嵌入矩阵将输入的数据中的词转换成词向量，维度[batch_size, sequence_length, embedding_size]
+            # self.embeddedWords = tf.nn.embedding_lookup(self.W, self.inputX)
+            self.embeddedWords = self.inputX
 
         # 定义两层双向LSTM的模型结构
         with tf.name_scope("Bi-LSTM"):
@@ -40,18 +47,26 @@ class BiLSTM(object):
                     # 采用动态rnn，可以动态的输入序列的长度，若没有输入，则取序列的全长
                     # outputs是一个元祖(output_fw, output_bw)，其中两个元素的维度都是[batch_size, max_time, hidden_size],fw和bw的hidden_size一样
                     # self.current_state 是最终的状态，二元组(state_fw, state_bw)，state_fw=[batch_size, s]，s是一个元祖(h, c)
-                    outputs, self.current_state = tf.nn.bidirectional_dynamic_rnn(lstmFwCell, lstmBwCell,
-                                                                                  self.embeddedWords, dtype=tf.float32,
-                                                                                  scope="bi-lstm" + str(idx))
+                    outputs_, self.current_state = tf.nn.bidirectional_dynamic_rnn(lstmFwCell, lstmBwCell,
+                                                                                   self.embeddedWords, dtype=tf.float32,
+                                                                                   scope="bi-lstm" + str(idx))
 
                     # 对outputs中的fw和bw的结果拼接 [batch_size, time_step, hidden_size * 2]
-                    self.embeddedWords = tf.concat(outputs, 2)
+                    self.embeddedWords = tf.concat(outputs_, 2)
 
-        # 去除最后时间步的输出作为全连接的输入
-        finalOutput = self.embeddedWords[:, 0, :]
+        # 将最后一层Bi-LSTM输出的结果分割成前向和后向的输出
+        outputs = tf.split(self.embeddedWords, 2, -1)
 
-        outputSize = config.model.hiddenSizes[-1] * 2  # 因为是双向LSTM，最终的输出值是fw和bw的拼接，因此要乘以2
-        output = tf.reshape(finalOutput, [-1, outputSize])  # reshape成全连接层的输入维度
+        # 将前向和后向的输出相加
+        with tf.name_scope("Attention"):
+            H = outputs[0] + outputs[1]
+
+            # 得到Attention的输出
+            output = self.attention(H)
+            outputSize = config.model.hiddenSizes[-1]
+
+        # outputSize = config.model.hiddenSizes[-1] * 2  # 因为是双向LSTM，最终的输出值是fw和bw的拼接，因此要乘以2
+        # output = tf.reshape(finalOutput, [-1, outputSize])  # reshape成全连接层的输入维度
 
         # 全连接层的输出
         with tf.name_scope("output"):
@@ -80,3 +95,39 @@ class BiLSTM(object):
                 losses = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.inputY)
 
             self.loss = tf.reduce_mean(losses) + config.model.l2RegLambda * l2Loss
+
+    def attention(self, H):
+        """
+        利用Attention机制得到句子的向量表示
+        """
+        # 获得最后一层LSTM的神经元数量
+        hiddenSize = self.config.model.hiddenSizes[-1]
+
+        # 初始化一个权重向量，是可训练的参数
+        W = tf.Variable(tf.random_normal([hiddenSize], stddev=0.1))
+
+        # 对Bi-LSTM的输出用激活函数做非线性转换
+        M = tf.tanh(H)
+
+        # 对W和M做矩阵运算，W=[batch_size, time_step, hidden_size]，计算前做维度转换成[batch_size * time_step, hidden_size]
+        # newM = [batch_size, time_step, 1]，每一个时间步的输出由向量转换成一个数字
+        newM = tf.matmul(tf.reshape(M, [-1, hiddenSize]), tf.reshape(W, [-1, 1]))
+
+        # 对newM做维度转换成[batch_size, time_step]
+        restoreM = tf.reshape(newM, [-1, self.config.sequenceLength])
+
+        # 用softmax做归一化处理[batch_size, time_step]
+        self.alpha = tf.nn.softmax(restoreM)
+
+        # 利用求得的alpha的值对H进行加权求和，用矩阵运算直接操作
+        r = tf.matmul(tf.transpose(H, [0, 2, 1]), tf.reshape(self.alpha, [-1, self.config.sequenceLength, 1]))
+
+        # 将三维压缩成二维sequeezeR=[batch_size, hidden_size]
+        sequeezeR = tf.reshape(r, [-1, hiddenSize])
+
+        sentenceRepren = tf.tanh(sequeezeR)
+
+        # 对Attention的输出可以做dropout处理
+        output = tf.nn.dropout(sentenceRepren, self.dropoutKeepProb)
+
+        return output

@@ -4,6 +4,7 @@ import random
 
 import numpy as np
 import os
+import pickle
 
 from bert_with_lstm.config import *
 from bert_serving.client import BertClient
@@ -19,6 +20,10 @@ def nextBatch(example, label_list, batchSize):
     生成batch数据集，用生成器的方式输出
     """
 
+    # print("example ==> ", example)
+    # print("label_list ==> ", label_list)
+    # print("batchSize ==> ", batchSize)
+
     perm = np.arange(len(example))
     np.random.shuffle(perm)
 
@@ -28,11 +33,14 @@ def nextBatch(example, label_list, batchSize):
     for (i, label) in enumerate(label_list):
         label_map[label] = i
 
+    print("label_map ==> ", label_map)
+
     embeddings = []
     label_ids = []
 
     for item in example:
-        embeddings.append(item.embedding)
+        # 补齐embedding
+        embeddings.append(padding(item.embedding))
         label_id = label_map[item.label]
         label_ids.append(label_id)
 
@@ -43,6 +51,17 @@ def nextBatch(example, label_list, batchSize):
         batchY = np.array(label_ids[start: end], dtype="int32")
 
         yield batchX, batchY
+
+
+def padding(embedding):
+    length = len(embedding)
+    if length >= config.sequenceLength:
+        return embedding[:config.sequenceLength]
+    else:
+        arr = embedding.tolist()
+        for i in range(config.sequenceLength - length):
+            arr.append([0] * config.model.embeddingSize)
+        return np.array(arr)
 
 
 class InputExample(object):
@@ -61,6 +80,13 @@ class Dataset(object):
         self.test_input_example = []
 
     def getTrainData(self):
+        label_list_file = os.path.join(config.outputPath, "label_list.record")
+        train_input_example_file = os.path.join(config.outputPath, "train_input_example.record")
+        if os.path.exists(label_list_file) and os.path.exists(train_input_example_file):
+            self.label_list = readDataFile(label_list_file)
+            self.train_input_example = readDataFile(train_input_example_file)
+            return
+
         file_path = os.path.join(config.dataSource, 'train.txt')
         with open(file_path, 'r', encoding="utf-8") as f:
             reader = f.readlines()
@@ -79,6 +105,11 @@ class Dataset(object):
             self.train_input_example.append(InputExample(embedding, label=lab))
 
     def getValData(self):
+        eval_input_example_file = os.path.join(config.outputPath, "eval_input_example.record")
+        if os.path.exists(eval_input_example_file):
+            self.eval_input_example = readDataFile(eval_input_example_file)
+            return
+
         file_path = os.path.join(config.dataSource, 'val.txt')
         with open(file_path, 'r', encoding="utf-8") as f:
             reader = f.readlines()
@@ -90,8 +121,15 @@ class Dataset(object):
             content = split_line[1]
             embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
             self.eval_input_example.append(InputExample(embedding, label=lab))
+        # 序列化
+        writeDataFile(self.eval_input_example, eval_input_example_file)
 
     def getTestData(self):
+        test_input_example_file = os.path.join(config.outputPath, "test_input_example.record")
+        if os.path.exists(test_input_example_file):
+            self.test_input_example = readDataFile(test_input_example_file)
+            return
+
         file_path = os.path.join(config.dataSource, 'test.txt')
         with open(file_path, 'r', encoding="utf-8") as f:
             reader = f.readlines()
@@ -157,10 +195,23 @@ def get_split_text(text, split_len=250, overlap_len=50):
     return split_text
 
 
+def writeDataFile(content, filePath):
+    pickle.dump(content, open(filePath, 'wb'))
+    print("保存成功，filePath ==> " + filePath)
+
+
+def readDataFile(filePath):
+    return pickle.load(open(filePath, 'rb'))
+
+
 def test():
     corpus = ["更好的师傅还是发生纠纷",
-        "1冠军飞将一家团聚眼前的女子穿着一身浅金色的礼服，身形修长，皮肤白皙，一头黑色长发披在肩上，那标准的瓜子脸上一双眸子透着感性的欲望。她此时正看着唐雨笑。眼前的女子穿着一身浅金色的礼服，身形修长，皮肤白皙，一头黑色长发披在肩上，那标准的瓜子脸上一双眸子透着感性的欲望。她此时正看着唐雨笑。加官进爵广发基金发动机恢复好地方和豆腐干换个地方和规范化好地方和规范化毒贩夫妇对方过后的fghfhasdsd"]
-    vectors = bc.encode(corpus)
+              "1冠军飞将一家团聚眼前的女子穿着一身浅金色的礼服，身形修长，皮肤白皙，一头黑色长发披在肩上，那标准的瓜子脸上一双眸子透着感性的欲望。她此时正看着唐雨笑。眼前的女子穿着一身浅金色的礼服，身形修长，皮肤白皙，一头黑色长发披在肩上，那标准的瓜子脸上一双眸子透着感性的欲望。她此时正看着唐雨笑。加官进爵广发基金发动机恢复好地方和豆腐干换个地方和规范化好地方和规范化毒贩夫妇对方过后的fghfhasdsd"]
+    vectors = bc.encode(["[CLS][SEP]"])
+    arr = vectors.tolist()
+    arr.append([-0] * 768)
+    print("arr ==> ", arr)
+    print(np.array(arr).shape)
     print(vectors.shape)
     print(vectors)
     print(np.vstack([vectors]).shape)

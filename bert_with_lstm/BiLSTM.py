@@ -14,7 +14,7 @@ class BiLSTMWithAttention(object):
         self.config = config
 
         # 定义模型的输入
-        self.inputX = tf.placeholder(tf.float32, shape=[config.batchSize, config.sequenceLength, 768], name="inputX")
+        self.inputX = tf.placeholder(tf.float32, shape=[None, config.sequenceLength, config.model.embeddingSize], name="inputX")
         self.inputY = tf.placeholder(tf.int32, shape=[None], name="inputY")
 
         self.dropoutKeepProb = tf.placeholder(tf.float32, name="dropoutKeepProb")
@@ -115,6 +115,7 @@ class BiLSTMWithAttention(object):
         newM = tf.matmul(tf.reshape(M, [-1, hiddenSize]), tf.reshape(W, [-1, 1]))
 
         # 对newM做维度转换成[batch_size, time_step]
+        print("newM ==> ", newM.shape)
         restoreM = tf.reshape(newM, [-1, self.config.sequenceLength])
 
         # 用softmax做归一化处理[batch_size, time_step]

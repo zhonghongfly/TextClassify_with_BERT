@@ -7,6 +7,7 @@ from bert_with_lstm.BiLSTM import BiLSTMWithAttention
 from bert_with_lstm.metrics import *
 from bert_with_lstm.dataset import *
 import os
+import shutil
 
 labelList = data.getLabelList()
 
@@ -57,7 +58,7 @@ with tf.Graph().as_default():
 
         # 保存模型的一种方式，保存为pb文件
         if os.path.exists(config.savedModelPathForPb):
-            os.rmdir(config.savedModelPathForPb)
+            shutil.rmtree(config.savedModelPathForPb)
         builder = tf.saved_model.builder.SavedModelBuilder(config.savedModelPathForPb)
 
         sess.run(tf.global_variables_initializer())

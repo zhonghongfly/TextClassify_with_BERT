@@ -19,7 +19,7 @@ class ModelConfig(object):
 
 
 class Config(object):
-    sequenceLength = 100  # 取了所有序列长度的均值
+    sequenceLength = 50  # 取了所有序列长度的均值
     batchSize = 128  # 128
 
     overlap_len = 200

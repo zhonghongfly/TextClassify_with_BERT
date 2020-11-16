@@ -14,8 +14,8 @@ class BiLSTMWithAttention(object):
         self.config = config
 
         # 定义模型的输入
-        self.inputX = tf.placeholder(tf.float32, shape=(config.batchSize, config.sequenceLength, 768), name="inputX")
-        self.inputY = tf.placeholder(tf.int32, [None], name="inputY")
+        self.inputX = tf.placeholder(tf.float32, shape=[config.batchSize, config.sequenceLength, 768], name="inputX")
+        self.inputY = tf.placeholder(tf.int32, shape=[None], name="inputY")
 
         self.dropoutKeepProb = tf.placeholder(tf.float32, name="dropoutKeepProb")
 

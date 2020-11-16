@@ -3,7 +3,7 @@
 # 配置参数
 
 class TrainingConfig(object):
-    epoches = 4
+    epoches = 5
     evaluateEvery = 100
     checkpointEvery = 100
     learningRate = 0.001

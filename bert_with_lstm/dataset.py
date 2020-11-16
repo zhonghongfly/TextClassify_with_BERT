@@ -136,9 +136,7 @@ class Dataset(object):
         for index, line in enumerate(reader):
             split_line = line.strip().split("\t")
             lab = split_line[0]
-            print("label ==> " + lab)
             content = split_line[1]
-            print("content ==> " + content)
             embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
             self.test_input_example.append(InputExample(embedding, label=lab))
 
@@ -196,6 +194,8 @@ def get_split_text(text, split_len=250, overlap_len=50):
 
 
 def writeDataFile(content, filePath):
+    if not os.path.exists(config.outputPath):
+        os.makedirs(config.outputPath)
     pickle.dump(content, open(filePath, 'wb'))
     print("保存成功，filePath ==> " + filePath)
 

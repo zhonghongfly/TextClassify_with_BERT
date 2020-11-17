@@ -12,8 +12,8 @@ from bert_serving.client import BertClient
 # 192.168.2.111
 bc = BertClient(ip='127.0.0.1', check_version=False, check_length=False)
 
-# 输出batch数据集
 
+# 输出batch数据集
 def nextBatch(example, label_list, batchSize):
     """
     生成batch数据集，用生成器的方式输出

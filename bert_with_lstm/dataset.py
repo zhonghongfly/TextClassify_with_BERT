@@ -12,7 +12,6 @@ from bert_serving.client import BertClient
 # 192.168.2.111
 bc = BertClient(ip='127.0.0.1', check_version=False, check_length=False)
 
-
 # 输出batch数据集
 
 def nextBatch(example, label_list, batchSize):
@@ -96,13 +95,16 @@ class Dataset(object):
             # print(line)
             split_line = line.strip().split("\t")
             lab = split_line[0]
+            self.label_list.append(lab)
             print(lab)
             content = split_line[1]
-            print(content)
-            self.label_list.append(lab)
-            embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
-            print(embedding.shape)
-            self.train_input_example.append(InputExample(embedding, label=lab))
+            print("length ==> ", len(content))
+            if len(content) > config.max_length:
+                for item in get_split_text(content, config.max_length, 0):
+                    embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
+                    self.train_input_example.append(InputExample(embedding, label=lab))
+        # 序列化
+        writeDataFile(self.train_input_example, train_input_example_file)
 
     def getValData(self):
         eval_input_example_file = os.path.join(config.outputPath, "eval_input_example.record")
@@ -119,8 +121,10 @@ class Dataset(object):
             split_line = line.strip().split("\t")
             lab = split_line[0]
             content = split_line[1]
-            embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
-            self.eval_input_example.append(InputExample(embedding, label=lab))
+            if len(content) > config.max_length:
+                for item in get_split_text(content, config.max_length, 0):
+                    embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
+                    self.eval_input_example.append(InputExample(embedding, label=lab))
         # 序列化
         writeDataFile(self.eval_input_example, eval_input_example_file)
 
@@ -139,6 +143,8 @@ class Dataset(object):
             content = split_line[1]
             embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
             self.test_input_example.append(InputExample(embedding, label=lab))
+        # 序列化
+        writeDataFile(self.test_input_example, test_input_example_file)
 
     def getLabelList(self):
         if len(self.label_list) <= 0:
@@ -189,7 +195,7 @@ def get_split_text(text, split_len=250, overlap_len=50):
         split_text.append(text[end: text_len])
         if text_len - end > split_len:
             print("end_len ==> ", len(text[end: text_len]), text_len, end, step)
-    # print(split_text)
+    # print(len(split_text))
     return split_text
 
 

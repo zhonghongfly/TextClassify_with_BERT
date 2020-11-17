@@ -26,7 +26,7 @@ class Config(object):
 
     split_len = 500
 
-    dataSource = "../base_on_bert/data/"
+    dataSource = "./data/"
 
     outputPath = "./output/"
 
@@ -34,13 +34,15 @@ class Config(object):
 
     savedModelPathForPb = outputPath + "pb"
 
-    numClasses = 20  # 二分类设置为1，多分类设置为类别的数目
+    numClasses = 20  # 类别的数目
 
     rate = 0.8  # 训练集的比例
 
     training = TrainingConfig()
 
     model = ModelConfig()
+
+    max_length = 15000
 
 
 # 实例化配置参数对象

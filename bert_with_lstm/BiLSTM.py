@@ -95,6 +95,8 @@ class BiLSTMWithAttention(object):
             elif config.numClasses > 1:
                 losses = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=self.inputY)
 
+            # focal_loss = tf.reduce_mean(- tf.reduce_sum(alpha * label * tf.pow(1-pred, gamma) * tf.log(pred), reduction_indices=[1]))
+
             self.loss = tf.reduce_mean(losses) + config.model.l2RegLambda * l2Loss
 
     def attention(self, H):
@@ -133,3 +135,31 @@ class BiLSTMWithAttention(object):
         output = tf.nn.dropout(sentenceRepren, self.dropoutKeepProb)
 
         return output
+
+    # focal loss 解决长尾问题
+    def focal_loss(self, alpha, gamma=2.0):
+        """
+            focal loss for multi category of multi label problem
+            适用于多分类或多标签问题的focal loss
+            alpha用于指定不同类别/标签的权重，数组大小需要与类别个数一致
+            当你的数据集不同类别/标签之间存在偏斜，可以尝试适用本函数作为loss
+            Usage:
+             model.compile(loss=[multi_category_focal_loss1(alpha=[1,2,3,2], gamma=2)], metrics=["accuracy"], optimizer=adam)
+        """
+        epsilon = 1.e-7
+        alpha = tf.constant(alpha, dtype=tf.float32)
+        # alpha = tf.constant([[1],[1],[1],[1],[1]], dtype=tf.float32)
+        # alpha = tf.constant_initializer(alpha)
+        gamma = float(gamma)
+
+        def multi_category_focal_loss1_fixed(y_true, y_pred):
+            y_true = tf.cast(y_true, tf.float32)
+            y_pred = tf.clip_by_value(y_pred, epsilon, 1. - epsilon)
+            y_t = tf.multiply(y_true, y_pred) + tf.multiply(1 - y_true, 1 - y_pred)
+            ce = -tf.log(y_t)
+            weight = tf.pow(tf.subtract(1., y_t), gamma)
+            fl = tf.matmul(tf.multiply(weight, ce), alpha)
+            loss = tf.reduce_mean(fl)
+            return loss
+
+        return multi_category_focal_loss1_fixed

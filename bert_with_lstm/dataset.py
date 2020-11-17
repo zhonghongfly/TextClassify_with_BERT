@@ -94,11 +94,11 @@ class Dataset(object):
         for index, line in enumerate(reader):
             # print(line)
             split_line = line.strip().split("\t")
+            if len(split_line) < 2:
+                continue
             lab = split_line[0]
             self.label_list.append(lab)
-            print(lab)
             content = split_line[1]
-            print("length ==> ", len(content))
             if len(content) > config.max_length:
                 for item in get_split_text(content, config.max_length, 0):
                     embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
@@ -119,6 +119,8 @@ class Dataset(object):
         random.shuffle(reader)
         for index, line in enumerate(reader):
             split_line = line.strip().split("\t")
+            if len(split_line) < 2:
+                continue
             lab = split_line[0]
             content = split_line[1]
             if len(content) > config.max_length:
@@ -139,6 +141,8 @@ class Dataset(object):
             reader = f.readlines()
         for index, line in enumerate(reader):
             split_line = line.strip().split("\t")
+            if len(split_line) < 2:
+                continue
             lab = split_line[0]
             content = split_line[1]
             embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))

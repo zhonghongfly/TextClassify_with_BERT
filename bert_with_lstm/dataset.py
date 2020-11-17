@@ -99,11 +99,10 @@ class Dataset(object):
             lab = split_line[0]
             self.label_list.append(lab)
             content = split_line[1]
-            get_split_text(content, config.split_len, config.overlap_len)
-            # if len(content) > config.max_length:
-            #     for item in get_split_text(content, config.max_length, 0):
-            #         embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
-            #         self.train_input_example.append(InputExample(embedding, label=lab))
+            if len(content) > config.max_length:
+                for item in get_split_text(content, config.max_length, 0):
+                    embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
+                    self.train_input_example.append(InputExample(embedding, label=lab))
         # 序列化
         writeDataFile(self.label_list, label_list_file)
         writeDataFile(self.train_input_example, train_input_example_file)

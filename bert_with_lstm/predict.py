@@ -5,6 +5,10 @@ import tensorflow as tf
 from bert_with_lstm.dataset import *
 from bert_with_lstm.config import *
 
+num = 0
+
+accNum = 0
+
 graph = tf.Graph()
 with graph.as_default():
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
@@ -26,4 +30,8 @@ with graph.as_default():
         for item in data.get_test_input_example():
             pred = sess.run(predictions, feed_dict={inputX: np.array([padding(item.embedding)]), dropoutKeepProb: 1.0})[0]
             pred = data.getLabelList()[pred]
+            if pred == item.label:
+                accNum += 1
+            num += 1
             print(pred)
+        print("预测准确率 ==> ", accNum / num)

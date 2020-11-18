@@ -207,6 +207,8 @@ def get_split_text(text, split_len=250, overlap_len=50):
             end = w * window + split_len
             text_piece = text[w * window: end]
             # print("text_piece_len ==> ", w * window, end, len(text_piece), text_piece)
+        if len(text_piece) < 300:
+            print(text_piece)
         split_text.append(text_piece)
         if end >= text_len:
             break

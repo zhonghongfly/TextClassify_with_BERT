@@ -68,6 +68,7 @@ with tf.Graph().as_default():
             """
             训练函数
             """
+            global acc, prec, f_beta, recall
             feed_dict = {
                 lstm.inputX: batchX,
                 lstm.inputY: batchY,
@@ -95,6 +96,7 @@ with tf.Graph().as_default():
             """
             验证函数
             """
+            global acc, precision, f_beta, recall
             feed_dict = {
                 lstm.inputX: batchX,
                 lstm.inputY: batchY,
@@ -114,8 +116,7 @@ with tf.Graph().as_default():
 
             return loss, acc, precision, recall, f_beta
 
-
-        for i in range(config.training.epoches):
+        for i in range(int(len(train_example) / config.batchSize * config.training.epoches)):
             # 训练模型
             print("start training model")
             for batchTrain in nextBatch(train_example, labelList, config.batchSize):

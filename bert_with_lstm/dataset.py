@@ -91,18 +91,23 @@ class Dataset(object):
             reader = f.readlines()
         random.seed(0)
         random.shuffle(reader)
+        num = 0
         for index, line in enumerate(reader):
             # print(line)
             split_line = line.strip().split("\t")
             if len(split_line) < 2:
                 continue
+            if num % 10 == 0:
+                print("train step ==> ", num)
             lab = split_line[0]
             self.label_list.append(lab)
             content = split_line[1]
             if len(content) > config.max_length:
                 for item in get_split_text(content, config.max_length, 0):
                     embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
+                    print(embedding.shape)
                     self.train_input_example.append(InputExample(embedding, label=lab))
+            num += 1
         # 序列化
         writeDataFile(self.label_list, label_list_file)
         writeDataFile(self.train_input_example, train_input_example_file)
@@ -118,16 +123,20 @@ class Dataset(object):
             reader = f.readlines()
         random.seed(0)
         random.shuffle(reader)
+        num = 0
         for index, line in enumerate(reader):
             split_line = line.strip().split("\t")
             if len(split_line) < 2:
                 continue
+            if num % 10 == 0:
+                print("val step ==> ", num)
             lab = split_line[0]
             content = split_line[1]
             if len(content) > config.max_length:
                 for item in get_split_text(content, config.max_length, 0):
                     embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
                     self.eval_input_example.append(InputExample(embedding, label=lab))
+            num += 1
         # 序列化
         writeDataFile(self.eval_input_example, eval_input_example_file)
 
@@ -140,14 +149,18 @@ class Dataset(object):
         file_path = os.path.join(config.dataSource, 'test.txt')
         with open(file_path, 'r', encoding="utf-8") as f:
             reader = f.readlines()
+        num = 0
         for index, line in enumerate(reader):
             split_line = line.strip().split("\t")
             if len(split_line) < 2:
                 continue
+            if num % 10 == 0:
+                print("test step ==> ", num)
             lab = split_line[0]
             content = split_line[1]
             embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
             self.test_input_example.append(InputExample(embedding, label=lab))
+        num += 1
         # 序列化
         writeDataFile(self.test_input_example, test_input_example_file)
 

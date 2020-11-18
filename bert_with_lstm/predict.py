@@ -33,5 +33,5 @@ with graph.as_default():
             if pred == item.label:
                 accNum += 1
             num += 1
-            print(pred)
+            print("预测分类：", pred, " 现分类：", item.label)
         print("预测准确率 ==> ", accNum / num)

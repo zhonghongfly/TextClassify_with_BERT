@@ -159,7 +159,7 @@ class Dataset(object):
                 print("test step ==> ", num)
             lab = split_line[0]
             content = split_line[1]
-            embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len))
+            embedding = bc.encode(get_split_text(content, config.split_len, config.overlap_len)[:config.sequenceLength])
             print(embedding.shape)
             self.test_input_example.append(InputExample(embedding, label=lab))
         num += 1

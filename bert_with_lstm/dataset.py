@@ -134,7 +134,7 @@ class Dataset(object):
             content = split_line[1]
             if len(content) > config.max_length:
                 for item in get_split_text(content, config.max_length, config.overlap_len):
-                    embedding = bc.encode(get_split_text(item, config.split_len, config.overlap_len))
+                    embedding = bc.encode(get_split_text(item, config.split_len, 0))
                     print(embedding.shape)
                     self.eval_input_example.append(InputExample(embedding, label=lab))
             num += 1
@@ -162,7 +162,7 @@ class Dataset(object):
             embedding = bc.encode(get_split_text(content, config.split_len, 0)[:config.sequenceLength])
             print(embedding.shape)
             self.test_input_example.append(InputExample(embedding, label=lab))
-        num += 1
+            num += 1
         # 序列化
         writeDataFile(self.test_input_example, test_input_example_file)
 

@@ -6,7 +6,7 @@ class TrainingConfig(object):
     epoches = 5
     evaluateEvery = 100
     checkpointEvery = 100
-    learningRate = 0.001
+    learningRate = 0.0001
 
 
 class ModelConfig(object):
@@ -14,7 +14,7 @@ class ModelConfig(object):
 
     hiddenSizes = [256, 128]  # LSTM结构的神经元个数
 
-    dropoutKeepProb = 0.5
+    dropoutKeepProb = 0.9
     l2RegLambda = 0.0
 
 

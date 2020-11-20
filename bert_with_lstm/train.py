@@ -15,6 +15,8 @@ train_example = data.get_train_input_example()
 
 eval_example = data.get_eval_input_example()
 
+labelListRange = range(len(labelList))
+
 # 定义计算图
 with tf.Graph().as_default():
     session_conf = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
@@ -85,7 +87,7 @@ with tf.Graph().as_default():
 
             elif config.numClasses > 1:
                 acc, recall, prec, f_beta = get_multi_metrics(pred_y=predictions, true_y=batchY,
-                                                              labels=labelList)
+                                                              labels=labelListRange)
 
             trainSummaryWriter.add_summary(summary, step)
 
@@ -110,7 +112,7 @@ with tf.Graph().as_default():
 
                 acc, precision, recall, f_beta = get_binary_metrics(pred_y=predictions, true_y=batchY)
             elif config.numClasses > 1:
-                acc, precision, recall, f_beta = get_multi_metrics(pred_y=predictions, true_y=batchY, labels=labelList)
+                acc, precision, recall, f_beta = get_multi_metrics(pred_y=predictions, true_y=batchY, labels=labelListRange)
 
             evalSummaryWriter.add_summary(summary, step)
 

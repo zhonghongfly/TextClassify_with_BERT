@@ -14,7 +14,7 @@ class ModelConfig(object):
 
     hiddenSizes = [256, 128]  # LSTM结构的神经元个数
 
-    dropoutKeepProb = 0.9
+    dropoutKeepProb = 0.5
     l2RegLambda = 0.0
 
 

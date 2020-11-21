@@ -98,7 +98,7 @@ class Dataset(object):
             if len(split_line) < 2:
                 continue
             if num % 100 == 0:
-                print("train step ==> ", num)
+                print("train step ==> ", num, " index ==> ", index, " sum ==> ", len(reader))
             lab = split_line[0]
             self.label_list.append(lab)
             content = split_line[1]
@@ -133,7 +133,7 @@ class Dataset(object):
             if len(split_line) < 2:
                 continue
             if num % 100 == 0:
-                print("val step ==> ", num)
+                print("val step ==> ", num, " index ==> ", index, " sum ==> ", len(reader))
             lab = split_line[0]
             content = split_line[1]
             if len(content) > config.max_length:
@@ -164,7 +164,7 @@ class Dataset(object):
             if len(split_line) < 2:
                 continue
             if num % 100 == 0:
-                print("test step ==> ", num)
+                print("test step ==> ", num, " index ==> ", index, " sum ==> ", len(reader))
             lab = split_line[0]
             content = split_line[1]
             embedding = bc.encode(get_split_text(content, config.split_len, 0)[:config.sequenceLength])
@@ -267,6 +267,7 @@ if __name__ == "__main__":
     num = 0
     for index, line in enumerate(reader):
         arr = get_split_text(line.split("\t")[1], config.split_len, config.overlap_len)
+        print(len(arr))
         num += len(arr)
     print(num)
 

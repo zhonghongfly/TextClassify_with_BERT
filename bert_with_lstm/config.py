@@ -19,10 +19,10 @@ class ModelConfig(object):
 
 
 class Config(object):
-    sequenceLength = 25  # 取了所有序列长度的均值
+    sequenceLength = 16  # 取了所有序列长度的均值
     batchSize = 128  # 128
 
-    overlap_len = 200
+    overlap_len = 0  # 200
 
     split_len = 500
 
@@ -42,7 +42,7 @@ class Config(object):
 
     model = ModelConfig()
 
-    max_length = 7700
+    max_length = 8000
 
 
 # 实例化配置参数对象

@@ -261,16 +261,16 @@ def test():
 data = Dataset()
 
 if __name__ == "__main__":
-    with open(os.path.join(config.dataSource, "val.txt"), 'r', encoding="utf-8") as f:
-        reader = f.readlines()
-    # random.seed(0)
-    random.shuffle(reader)
-    num = 0
-    for index, line in enumerate(reader):
-        arr = get_split_text(line.split("\t")[1], config.split_len, config.overlap_len)
-        print(len(arr))
-        num += len(arr)
-    print(num)
+    # with open(os.path.join(config.dataSource, "val.txt"), 'r', encoding="utf-8") as f:
+    #     reader = f.readlines()
+    # # random.seed(0)
+    # random.shuffle(reader)
+    # num = 0
+    # for index, line in enumerate(reader):
+    #     arr = get_split_text(line.split("\t")[1], config.split_len, config.overlap_len)
+    #     print(len(arr))
+    #     num += len(arr)
+    # print(num)
 
     text = u"彼此的眼神里充满了迷人的诱惑。突然，一长相还算不错的男子怒气冲冲的朝这对恋人走了过来，手里还提拎着个空的啤酒瓶。只见他扳过对方男子的肩，朝着那人的头一酒瓶子砸了下去，嘴里怒骂道:“李东强！！！我操你妈！敢抢我的女人？！”李东强被砸倒在地，额头上流下了鲜血。人群里顿时乱作一团，女人则发出了惊恐的尖叫声。见人被揍，同行的一行人纷纷围了过来。有人上前止住了那人的再次袭击。“温晁！你够了啊！”这名男子截住了温晁的拳头，挡在了李东强身前。这人大约二十岁出头，是一个长相十分干净帅气的小伙子，有着对明亮迷人的大眼睛，小麦般的健康肤色，修长健硕的体型，是那种让人一眼就会迷上的男人！“魏无羡！关你什么事？！你给我起开！”温晁甩开魏无羡的手，叫嚣道。魏无羡回头看了看倒在地上一脸痛苦的李东强，旁边的人正扶着他，查问着伤势。“江澄，先送他去医院。”魏无羡对好友江澄说道。“好！”江澄说着便在其他人的帮忙下扶起了李东强，朝酒吧外走去。东强的女友哭泣着跟了上去。温晁见状，气不打一出来，恶狠狠的恐吓道:“贱人！我跟你说，这事没完，我非弄死你们！”说着温晁便冲了过去。"
     # get_split_text(text, 5, 0)

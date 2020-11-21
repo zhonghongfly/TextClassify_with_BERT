@@ -278,13 +278,16 @@ if __name__ == "__main__":
     # 创建线程
     try:
         # 创建并启动第一个线程
-        t1 = threading.Thread(target=data.get_train_input_example, args=([BertClient(ip='127.0.0.1', check_version=False, check_length=False)]))
+        t1 = threading.Thread(target=data.get_train_input_example,
+                              args=([bc]))
         t1.start()
         # 创建并启动第二个线程
-        t2 = threading.Thread(target=data.get_eval_input_example, args=([BertClient(ip='127.0.0.1', check_version=False, check_length=False)]))
+        t2 = threading.Thread(target=data.get_eval_input_example,
+                              args=([BertClient(ip='127.0.0.1', check_version=False, check_length=False)]))
         t2.start()
         # 创建并启动第二个线程
-        t3 = threading.Thread(target=data.get_test_input_example, args=([BertClient(ip='127.0.0.1', check_version=False, check_length=False)]))
+        t3 = threading.Thread(target=data.get_test_input_example,
+                              args=([BertClient(ip='127.0.0.1', check_version=False, check_length=False)]))
         t3.start()
     except:
         print("Error: 无法启动线程")

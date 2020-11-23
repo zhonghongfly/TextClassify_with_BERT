@@ -53,10 +53,10 @@ def main():
     x, y = wash_data(train_example)
     print(x.shape, y.shape)
     train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"embedding": x}, y=y,
-                                                        num_epochs=config.training.epoches, batch_size=config.batchSize,
+                                                        num_epochs=None, batch_size=config.batchSize,
                                                         shuffle=True)
 
-    classifier.train(input_fn=train_input_fn, )
+    classifier.train(input_fn=train_input_fn, max_steps=int(len(train_example) * config.training.epoches))
 
     x, y = wash_data(eval_example)
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(x={"embedding": x}, y=y,
@@ -71,14 +71,15 @@ def main():
                                                       num_epochs=1, batch_size=config.batchSize,
                                                       shuffle=False)
 
-    result = classifier.predict(input_fn=pre_input_fn, yield_single_examples=False)
+    result = classifier.predict(input_fn=pre_input_fn, yield_single_examples=True)
 
     sum = 0
     num = 0
     for sam, prediction in zip(test_example, result):
         # print("pre ==> ", prediction, " sam ==> ", sam.label)
+        # print(prediction['class_ids'][0])
         sum += 1
-        class_ids = prediction['class_ids'][0][0]
+        class_ids = prediction['class_ids'][0]
         if sam.label == labelList[class_ids]:
             num += 1
     print("测试准确率：", num / sum, sum, num)

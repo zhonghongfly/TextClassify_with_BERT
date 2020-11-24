@@ -5,6 +5,8 @@ import tensorflow as tf
 
 from bert_with_lstm.dataset import *
 
+tf.logging.set_verbosity(tf.logging.INFO)
+
 # Data sets
 labelList = data.getLabelList()
 
@@ -47,7 +49,10 @@ def main():
     classifier = tf.estimator.DNNClassifier(feature_columns=feature_columns,
                                             hidden_units=[512, 256, 128],
                                             n_classes=20,
-                                            dropout=0.5,
+                                            # dropout=0.5,
+                                            optimizer=tf.train.AdamOptimizer(
+                                                learning_rate=0.001
+                                            ),
                                             model_dir="./output/dnn_model")
 
     x, y = wash_data(train_example)
@@ -60,10 +65,10 @@ def main():
 
     x, y = wash_data(eval_example)
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(x={"embedding": x}, y=y,
-                                                       num_epochs=1, batch_size=config.batchSize,
+                                                       num_epochs=None, batch_size=config.batchSize,
                                                        shuffle=True)
 
-    evaluate_score = classifier.evaluate(input_fn=eval_input_fn, )
+    evaluate_score = classifier.evaluate(input_fn=eval_input_fn, steps=len(x))
 
     print("evaluate_score ==> ", evaluate_score)
 
@@ -75,6 +80,7 @@ def main():
 
     sum = 0
     num = 0
+    print(len(test_example))
     for sam, prediction in zip(test_example, result):
         # print("pre ==> ", prediction, " sam ==> ", sam.label)
         # print(prediction['class_ids'][0])

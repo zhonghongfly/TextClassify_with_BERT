@@ -3,7 +3,7 @@
 # 配置参数
 
 class TrainingConfig(object):
-    epoches = 5
+    epoches = 10
     evaluateEvery = 100
     checkpointEvery = 100
     learningRate = 0.0001
@@ -20,7 +20,7 @@ class ModelConfig(object):
 
 class Config(object):
     sequenceLength = 16  # 取了所有序列长度的均值
-    batchSize = 128  # 128
+    batchSize = 1024  # 128
 
     overlap_len = 0  # 200
 

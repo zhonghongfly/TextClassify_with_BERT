@@ -35,6 +35,8 @@ def wash_data(example, shuffle=True):
 
     for item in example:
         # 补齐embedding
+        if len(item.embedding) < 16:
+            continue
         embeddings.append(padding(item.embedding))
         label_id = label_map[item.label]
         label_ids.append(label_id)
@@ -42,17 +44,24 @@ def wash_data(example, shuffle=True):
     return np.array(embeddings, dtype="float32"), np.array(label_ids, dtype="int32")
 
 
+def input_builder(example):
+    return tf.estimator.inputs.numpy_input_fn(x={"embedding": example},
+                                              num_epochs=1, batch_size=config.batchSize,
+                                              shuffle=False)
+
+
 def main():
     feature_columns = [tf.feature_column.numeric_column("embedding",
                                                         shape=[config.sequenceLength, config.model.embeddingSize])]
 
     classifier = tf.estimator.DNNClassifier(feature_columns=feature_columns,
-                                            hidden_units=[512, 256, 128],
+                                            hidden_units=[256, 128, 64],
                                             n_classes=20,
                                             # dropout=0.5,
                                             optimizer=tf.train.AdamOptimizer(
-                                                learning_rate=0.001
+                                                learning_rate=0.0001
                                             ),
+                                            batch_norm=True,
                                             model_dir="./output/dnn_model")
 
     x, y = wash_data(train_example)
@@ -61,9 +70,10 @@ def main():
                                                         num_epochs=None, batch_size=config.batchSize,
                                                         shuffle=True)
 
-    classifier.train(input_fn=train_input_fn, max_steps=int(len(train_example) * config.training.epoches))
+    classifier.train(input_fn=train_input_fn, max_steps=int(len(x) * config.training.epoches))
 
     x, y = wash_data(eval_example)
+    print(x.shape, y.shape)
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(x={"embedding": x}, y=y,
                                                        num_epochs=None, batch_size=config.batchSize,
                                                        shuffle=True)
@@ -76,19 +86,22 @@ def main():
                                                       num_epochs=1, batch_size=config.batchSize,
                                                       shuffle=False)
 
-    result = classifier.predict(input_fn=pre_input_fn, yield_single_examples=True)
-
-    sum = 0
-    num = 0
-    print(len(test_example))
-    for sam, prediction in zip(test_example, result):
-        # print("pre ==> ", prediction, " sam ==> ", sam.label)
-        # print(prediction['class_ids'][0])
+    # result = classifier.predict(input_fn=pre_input_fn, yield_single_examples=True)
+    sum = num = 0
+    for item in test_example:
+        embedding = item.embedding
+        label = item.label
+        if len(embedding) < 16:
+            continue
+        fn = input_builder(np.array([padding(embedding)], dtype="float32"))
+        for i in classifier.predict(input_fn=fn, yield_single_examples=False):
+            print(i)
+            label_id = i['class_ids'][0][0]
+            if labelList[label_id] == label:
+                num += 1
         sum += 1
-        class_ids = prediction['class_ids'][0]
-        if sam.label == labelList[class_ids]:
-            num += 1
-    print("测试准确率：", num / sum, sum, num)
+        # print("res ==> ", str(res))
+    print(sum, num, num / sum)
 
 
 if __name__ == "__main__":

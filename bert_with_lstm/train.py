@@ -44,12 +44,6 @@ with graph.as_default():
         outDir = os.path.abspath(os.path.join(os.path.curdir, "summarys"))
         print("Writing to {}\n".format(outDir))
 
-        trainSummaryDir = os.path.join(outDir, "train")
-        trainSummaryWriter = tf.summary.FileWriter(trainSummaryDir, sess.graph)
-        #
-        evalSummaryDir = os.path.join(outDir, "eval")
-        evalSummaryWriter = tf.summary.FileWriter(evalSummaryDir, sess.graph)
-
         if init_model_in_dir:
 
             checkpoint_file = tf.train.latest_checkpoint(config.savedModelPathForCkpt)
@@ -119,17 +113,27 @@ with graph.as_default():
             # 将梯度应用到变量下，生成训练器
             trainOp = optimizer.apply_gradients(gradsAndVars, global_step=globalStep)
 
-            # 用summary绘制tensorBoard
-            gradSummaries = []
-            for g, v in gradsAndVars:
-                if g is not None:
-                    tf.summary.histogram("{}/grad/hist".format(v.name), g)
-                    tf.summary.scalar("{}/grad/sparsity".format(v.name), tf.nn.zero_fraction(g))
+            sess.run(tf.global_variables_initializer())
 
-            lossSummary = tf.summary.scalar("loss", lstm.loss)
+        # 用summary绘制tensorBoard
+        optimizer = tf.train.AdamOptimizer(config.training.learningRate)
+        gradsAndVars = optimizer.compute_gradients(_loss)
+        gradSummaries = []
+        for g, v in gradsAndVars:
+            if g is not None:
+                tf.summary.histogram("{}/grad/hist".format(v.name), g)
+                tf.summary.scalar("{}/grad/sparsity".format(v.name), tf.nn.zero_fraction(g))
+
+        lossSummary = tf.summary.scalar("loss", _loss)
+
+        if init_model_in_dir:
             summaryOp = tf.summary.merge_all()
 
-            sess.run(tf.global_variables_initializer())
+        trainSummaryDir = os.path.join(outDir, "train")
+        trainSummaryWriter = tf.summary.FileWriter(trainSummaryDir, sess.graph)
+
+        evalSummaryDir = os.path.join(outDir, "eval")
+        evalSummaryWriter = tf.summary.FileWriter(evalSummaryDir, sess.graph)
 
         # 初始化所有变量
         saver = tf.train.Saver(tf.global_variables(), max_to_keep=5)
@@ -139,11 +143,11 @@ with graph.as_default():
             shutil.rmtree(config.savedModelPathForPb)
         builder = tf.saved_model.builder.SavedModelBuilder(config.savedModelPathForPb)
 
-
-
-        print("trainOp ==> ", trainOp, " summaryOp ==> ", summaryOp, " _loss ==> ", _loss, " globalStep ==> ", globalStep, " _predictions ==> ", _predictions)
+        print("trainOp ==> ", trainOp, " summaryOp ==> ", summaryOp, " _loss ==> ", _loss, " globalStep ==> ",
+              globalStep, " _predictions ==> ", _predictions)
 
         print(inputX, inputY, dropoutKeepProb)
+
 
         def trainStep(batchX, batchY):
             """
